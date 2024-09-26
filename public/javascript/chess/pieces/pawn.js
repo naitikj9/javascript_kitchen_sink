@@ -6,43 +6,42 @@ var Pawn = function(config){
 
 
 Pawn.prototype = new Piece({});
+Pawn.prototype.moveTo = function(targetPosition){
 
-Pawn.prototype.isValidPosition = function(targetPosition){
-    // Convert current position to row and column
-    let currentCol = this.position.charAt(0);
-    let currentRow = parseInt(this.position.charAt(1));
+    var isValidMove = this.isValidMove(targetPosition);
+    if (!isValidMove) {
+        console.log("Invalid move for pawn");
+        return;
+    }
+    console.log("move function starts here");
+    var newPos = targetPosition.col + targetPosition.row;
+    this.position = newPos;
+    this.render();
+    console.log("move function successfully ends here");
+}
+Pawn.prototype.isValidMove = function(targetPosition) {
+    var currentRow = parseInt(this.position[1], 10);
+    var targetRow = parseInt(targetPosition.row, 10);
+    var currentCol = this.position[0].toUpperCase();
+    var targetCol = targetPosition.col.toUpperCase();
 
-    // Calculate the allowed move distance based on pawn color
-    let moveDistance = this.color === 'white' ? 1 : -1;
-    let initialRow = this.color === 'white' ? 2 : 7;
-
-    // Check if the move is valid
-    if (targetPosition.col === currentCol) {
-        // Moving straight
-        if (targetPosition.row === (currentRow + moveDistance).toString()) {
-            // Regular one-square move
-            return true;
-        } else if (currentRow === initialRow && targetPosition.row === (currentRow + 2 * moveDistance).toString()) {
-            // Initial two-square move
-            return true;
+    if (this.color === 'white') {
+        if (currentCol === targetCol && targetRow === currentRow + 1) {
+            return !this.Board.getPieceAt({ col: currentCol, row: currentRow + 1 });
         }
-    } else if (Math.abs(targetPosition.col.charCodeAt(0) - currentCol.charCodeAt(0)) === 1 &&
-               targetPosition.row === (currentRow + moveDistance).toString()) {
-        // Diagonal capture (assuming there's an enemy piece, which should be checked in the main game logic)
-        return true;
+        if (currentCol === targetCol && currentRow === 2 && targetRow === currentRow + 2) {
+            return !this.Board.getPieceAt({ col: currentCol, row: currentRow + 1 }) &&
+                   !this.Board.getPieceAt({ col: currentCol, row: currentRow + 2 });
+        }
     }
-
-    // If none of the above conditions are met, the move is invalid
-    console.warn("Invalid move for pawn");
+    else if (this.color === 'black') {
+        if (currentCol === targetCol && targetRow === currentRow - 1) {
+            return !this.Board.getPieceAt({ col: currentCol, row: currentRow - 1 });
+        }
+        if (currentCol === targetCol && currentRow === 7 && targetRow === currentRow - 2) {
+            return !this.Board.getPieceAt({ col: currentCol, row: currentRow - 1 }) &&
+                   !this.Board.getPieceAt({ col: currentCol, row: currentRow - 2 });
+        }
+    }
     return false;
-}
-
-Pawn.prototype.moveTo = function(targetPosition){    
-    if(this.isValidPosition(targetPosition)){
-        this.position = targetPosition.col + targetPosition.row;
-        this.render();
-    }else{
-        //NOOP
-    }
-    
-}
+};
